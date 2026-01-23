@@ -1,0 +1,15 @@
+[project]
+name = "dog-safe-rekognition"
+version = "0.1.0"
+description = "Upload photo of ingredient list to see if safe for dogs"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "boto3>=1.42.33",
+    "streamlit>=1.53.1",
+]
+
+[dependency-groups]
+dev = [
+    "types-boto3[bedrock,essential,rekognition]>=1.42.33",
+]
