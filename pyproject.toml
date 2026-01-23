@@ -1,9 +1,9 @@
 [project]
-name = "dog-safe-rekognition"
+name = "dog_safe_rekognition"
 version = "0.1.0"
 description = "Upload photo of ingredient list to see if safe for dogs"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
     "boto3>=1.42.33",
     "streamlit>=1.53.1",
