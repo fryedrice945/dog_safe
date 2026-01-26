@@ -58,7 +58,7 @@ def send_to_bedrock(image_bytes: bytes, mime_type: str):
             "system": system_prompt,
             "messages": messages,
         }
-
+        st.write(json.dumps(request_body, indent=2))
         return client.invoke_model(
             modelId=os.getenv("BEDROCK_MODEL_ID", "amazon.nova-pro-v1:0"),
             body=json.dumps(request_body),
