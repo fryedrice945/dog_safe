@@ -47,6 +47,7 @@ def send_to_bedrock(image_bytes: bytes, mime_type: str):
                     "not clear or if you cannot determine the safety of the food based on the provided "
                     "information, respond with 'uncertain' and recommend consulting a veterinarian. "
                     "Do not make any assumptions about ingredients that are not explicitly listed on the label. "
+                    "You do not need to reiterate the list of known harmful ingredients that were previously mentioned. "
                     "Provide a concise explanation for your determination."
                 ),
             },
