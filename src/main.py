@@ -138,10 +138,7 @@ def run_app():
                 result_text,
                 flags=re.IGNORECASE,
             )
-            determination = None
             if det_match:
-                determination = det_match.group(1).splitlines()[0].strip()
-                # remove the determination line from the main explanation for cleaner display
                 explanation = re.sub(
                     r"Determination:\s*.+",
                     "",
@@ -153,17 +150,6 @@ def run_app():
 
             st.subheader("Analysis")
             st.markdown(explanation)
-
-            if determination:
-                dlow = determination.lower()
-                if "unsafe" in dlow or "not safe" in dlow or "danger" in dlow:
-                    st.error(f"Determination: {determination}")
-                elif "uncertain" in dlow or "unknown" in dlow:
-                    st.warning(f"Determination: {determination}")
-                elif "safe" in dlow or "ok" in dlow:
-                    st.success(f"Determination: {determination}")
-                else:
-                    st.info(f"Determination: {determination}")
 
     st.markdown("---")
     st.write("Privacy: images are processed locally in your browser/session.")
