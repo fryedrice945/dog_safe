@@ -24,7 +24,12 @@ def _show_image_preview(image_bytes, filename="photo"):
 
 def send_to_bedrock(image_bytes: bytes):
     try:
-        session = boto3.Session(profile_name=os.getenv("AWS_PROFILE_NAME"))
+        aws_cfg = st.secrets.get("aws", {})
+        session = boto3.Session(
+            aws_access_key_id=aws_cfg.get("access_key_id"),
+            aws_secret_access_key=aws_cfg.get("secret_access_key"),
+            region_name=aws_cfg.get("region_name", "us-east-1"),
+        )
         client = session.client(service_name="bedrock-runtime", region_name="us-east-1")
 
         system_prompt = [
