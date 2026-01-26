@@ -103,13 +103,14 @@ def run_app():
         _show_image_preview(image_bytes, filename)
         with st.spinner("Analyzing image..."):
             response = send_to_bedrock(image_bytes, mime_type)
-            st.write(response)
         if response:
             body_bytes = response["body"].read()
             content_type = response.get("contentType", "")
 
             if "application/json" in content_type:
                 parsed = json.loads(body_bytes.decode("utf-8"))
+
+                parsed = parsed.get("output").get("message").get("content")[0]
             elif content_type.startswith("text/") or content_type == "":
                 parsed = body_bytes.decode("utf-8")
             else:
