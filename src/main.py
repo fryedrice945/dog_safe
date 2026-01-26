@@ -104,10 +104,9 @@ def run_app():
             response_body = json.loads(response["body"].read())
             st.markdown("### Analysis Result")
             for message in response_body.get("messages", []):
-                if message.get("role") == "assistant":
-                    for content in message.get("content", []):
-                        if "text" in content:
-                            st.write(content["text"])
+                for content in message.get("content", []):
+                    if "text" in content:
+                        st.write(content["text"])
 
     st.markdown("---")
     st.write("Privacy: images are processed locally in your browser/session.")
