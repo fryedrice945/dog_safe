@@ -1,9 +1,12 @@
 import io
+import json
+import os
 
+import boto3
 import streamlit as st
 from PIL import Image
 
-st.set_page_config(page_title="Dog Safe Rekognition", layout="centered")
+st.set_page_config(page_title="Dog Safe", layout="centered")
 
 
 def _show_image_preview(image_bytes, filename="photo"):
@@ -19,8 +22,48 @@ def _show_image_preview(image_bytes, filename="photo"):
     )
 
 
+def send_to_bedrock(image_bytes: bytes):
+    try:
+        session = boto3.Session(profile_name=os.getenv("AWS_PROFILE_NAME"))
+        client = session.client(service_name="bedrock-runtime", region_name="us-east-1")
+
+        system_prompt = [
+            {
+                "text": (
+                    "You are an image analysis model that can analyze images and extract the text "
+                    "from within the image. You are also an expert in canine dietary safety. "
+                    "Given an image of an ingredient label, you will extract the text from the "
+                    "label and determine if the food is safe for dogs to consume based on common "
+                    "dietary guidelines. Also base your answer on scientific research and veterinary "
+                    "recommendations."
+                ),
+            },
+        ]
+
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"image": {"format": "png", "source": {"bytes": image_bytes}}},
+                ],
+            },
+        ]
+        request_body = {
+            "system": system_prompt,
+            "messages": messages,
+        }
+
+        return client.invoke_model(
+            modelId=os.getenv("BEDROCK_MODEL_ID", "amazon.nova-pro-v1:0"),
+            body=json.dumps(request_body),
+        )
+
+    except Exception as e:
+        st.error(f"Error processing image: {e}")
+
+
 def run_app():
-    st.title("Dog Safe Rekognition")
+    st.title("Dog Safe 🐶🛡️")
     st.write("Upload a photo or take one with your device camera. Mobile friendly.")
 
     col1, col2 = st.columns(2)
@@ -45,6 +88,16 @@ def run_app():
 
     if image_bytes and filename:
         _show_image_preview(image_bytes, filename)
+        with st.spinner("Analyzing image..."):
+            response = send_to_bedrock(image_bytes)
+        if response:
+            response_body = json.loads(response["body"].read())
+            st.markdown("### Analysis Result")
+            for message in response_body.get("messages", []):
+                if message.get("role") == "assistant":
+                    for content in message.get("content", []):
+                        if "text" in content:
+                            st.write(content["text"])
 
     st.markdown("---")
     st.write("Privacy: images are processed locally in your browser/session.")

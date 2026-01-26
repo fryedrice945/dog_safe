@@ -167,7 +167,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "types-boto3", extra = ["bedrock", "essential", "rekognition"] },
+    { name = "types-boto3", extra = ["bedrock", "bedrock-runtime", "essential", "rekognition"] },
 ]
 
 [package.metadata]
@@ -177,7 +177,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "types-boto3", extras = ["bedrock", "essential", "rekognition"], specifier = ">=1.42.33" }]
+dev = [{ name = "types-boto3", extras = ["bedrock", "bedrock-runtime", "essential", "rekognition"], specifier = ">=1.42.33" }]
 
 [[package]]
 name = "gitdb"
@@ -779,6 +779,9 @@ wheels = [
 bedrock = [
     { name = "types-boto3-bedrock" },
 ]
+bedrock-runtime = [
+    { name = "types-boto3-bedrock-runtime" },
+]
 essential = [
     { name = "types-boto3-cloudformation" },
     { name = "types-boto3-dynamodb" },
@@ -799,6 +802,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/4b/7f/a44afc8e8e02c53a65cecdf049b9841b7b63e8252549fcdac3b0742b9b0d/types_boto3_bedrock-1.42.27.tar.gz", hash = "sha256:29ffc0a675faac6e02a2503980a8aca2758dabe0655a6466477c3772eb5526c3", size = 61424, upload-time = "2026-01-13T20:40:44.873Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ba/b7/47169c56291362b22d4d76d95665c6f07d3c4c69fa48248d41e94ef650e9/types_boto3_bedrock-1.42.27-py3-none-any.whl", hash = "sha256:dc69ee51c519fb1fbe1136b81a6d7c225e41fcdbd07b97cede27eb2a928711ee", size = 69120, upload-time = "2026-01-13T20:40:43.593Z" },
+]
+
+[[package]]
+name = "types-boto3-bedrock-runtime"
+version = "1.42.31"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/bf/2d27876e30c816862adea97620b323d3a533795ec4db9c774addd8e74128/types_boto3_bedrock_runtime-1.42.31.tar.gz", hash = "sha256:4b4c764cbdd608d7ad45e9c5a4d02f17c606ae08048dcf16ceb3a38372ba8046", size = 29653, upload-time = "2026-01-20T21:23:25.423Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e6/52/352ce4a5d2515f93cda39defe3a4d13a977ee73bbc900820e3b4a1e6ad00/types_boto3_bedrock_runtime-1.42.31-py3-none-any.whl", hash = "sha256:4e8f1e75e4e9c0af4325116146a1c23dbb3badab3e4405f183e2fa7d271e4ef0", size = 35758, upload-time = "2026-01-20T21:18:35.39Z" },
 ]
 
 [[package]]

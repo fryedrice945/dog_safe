@@ -11,5 +11,5 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "types-boto3[bedrock,essential,rekognition]>=1.42.33",
+    "types-boto3[bedrock,bedrock-runtime,essential,rekognition]>=1.42.33",
 ]
