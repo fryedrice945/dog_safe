@@ -58,7 +58,6 @@ def send_to_bedrock(image_bytes: bytes, mime_type: str):
             "system": system_prompt,
             "messages": messages,
         }
-        st.write(json.dumps(request_body, indent=2))
         return client.invoke_model(
             modelId=os.getenv("BEDROCK_MODEL_ID", "amazon.nova-pro-v1:0"),
             body=json.dumps(request_body),
@@ -101,12 +100,17 @@ def run_app():
             response = send_to_bedrock(image_bytes, mime_type)
             st.write(response)
         if response:
-            response_body = json.loads(response["body"].read())
-            st.markdown("### Analysis Result")
-            for message in response_body.get("messages", []):
-                for content in message.get("content", []):
-                    if "text" in content:
-                        st.write(content["text"])
+            body_bytes = response['body'].read()
+            content_type = response.get("contentType", "")
+
+            if "application/json" in content_type:
+                parsed = json.loads(body_bytes.decode("utf-8"))
+            elif content_type.startswith("text/") or content_type == "":
+                parsed = body_bytes.decode("utf-8")
+            else:
+                parsed = body_bytes 
+
+            st.write(parsed)
 
     st.markdown("---")
     st.write("Privacy: images are processed locally in your browser/session.")
