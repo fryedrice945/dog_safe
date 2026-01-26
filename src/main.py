@@ -1,7 +1,7 @@
 import io
 import json
 import os
-
+import base64
 import boto3
 import streamlit as st
 from PIL import Image
@@ -45,11 +45,12 @@ def send_to_bedrock(image_bytes: bytes):
             },
         ]
 
+        image_b64 = base64.b64encode(image_bytes).decode("utf-8")
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"image": {"format": "png", "source": {"bytes": image_bytes}}},
+                    {"image": {"format": "png", "source": {"bytes": image_b64}}},
                 ],
             },
         ]
