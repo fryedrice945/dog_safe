@@ -165,12 +165,6 @@ def run_app():
                 else:
                     st.info(f"Determination: {determination}")
 
-            with st.expander("Raw model output"):
-                if isinstance(parsed, (dict, list)):
-                    st.code(json.dumps(parsed, indent=2), language="json")
-                else:
-                    st.code(result_text)
-
     st.markdown("---")
     st.write("Privacy: images are processed locally in your browser/session.")
 
