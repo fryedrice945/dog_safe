@@ -22,7 +22,7 @@ def _show_image_preview(image_bytes, filename="photo"):
     )
 
 
-def send_to_bedrock(image_bytes: bytes):
+def send_to_bedrock(image_bytes: bytes, mime_type: str):
     try:
         aws_cfg = st.secrets.get("aws", {})
         session = boto3.Session(
@@ -44,13 +44,13 @@ def send_to_bedrock(image_bytes: bytes):
                 ),
             },
         ]
-
+        image_format = mime_type.split("/")[-1] if mime_type else "png"
         image_b64 = base64.b64encode(image_bytes).decode("utf-8")
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"image": {"format": "png", "source": {"bytes": image_b64}}},
+                    {"image": {"format": image_format, "source": {"bytes": image_b64}}},
                 ],
             },
         ]
@@ -84,18 +84,21 @@ def run_app():
 
     image_bytes = None
     filename = None
+    mime_type = None
 
     if uploaded is not None:
         image_bytes = uploaded.read()
         filename = uploaded.name
+        mime_type = getattr(uploaded, "type", "image/png")
     elif camera_img is not None:
         image_bytes = camera_img.getvalue()
         filename = "camera_photo.png"
+        mime_type = getattr(camera_img, "type", "image/png")
 
     if image_bytes and filename:
         _show_image_preview(image_bytes, filename)
         with st.spinner("Analyzing image..."):
-            response = send_to_bedrock(image_bytes)
+            response = send_to_bedrock(image_bytes, mime_type)
         if response:
             response_body = json.loads(response["body"].read())
             st.markdown("### Analysis Result")
