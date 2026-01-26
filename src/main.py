@@ -40,7 +40,12 @@ def send_to_bedrock(image_bytes: bytes, mime_type: str):
                     "Given an image of an ingredient label, you will extract the text from the "
                     "label and determine if the food is safe for dogs to consume based on common "
                     "dietary guidelines. Also base your answer on scientific research and veterinary "
-                    "recommendations."
+                    "recommendations. If the label contains any ingredients that are known to be harmful "
+                    "to dogs, such as chocolate, grapes, raisins, onions, garlic, or artificial "
+                    "sweeteners like xylitol, you should flag the food as unsafe. If the label is "
+                    "not clear or if you cannot determine the safety of the food based on the provided "
+                    "information, respond with 'uncertain' and recommend consulting a veterinarian. "
+                    "Provide a concise explanation for your determination."
                 ),
             },
         ]
@@ -58,7 +63,6 @@ def send_to_bedrock(image_bytes: bytes, mime_type: str):
             "system": system_prompt,
             "messages": messages,
         }
-        st.write(json.dumps(request_body, indent=2))
         return client.invoke_model(
             modelId=os.getenv("BEDROCK_MODEL_ID", "amazon.nova-pro-v1:0"),
             body=json.dumps(request_body),
@@ -101,13 +105,17 @@ def run_app():
             response = send_to_bedrock(image_bytes, mime_type)
             st.write(response)
         if response:
-            response_body = json.loads(response["body"].read())
-            st.markdown("### Analysis Result")
-            for message in response_body.get("messages", []):
-                if message.get("role") == "assistant":
-                    for content in message.get("content", []):
-                        if "text" in content:
-                            st.write(content["text"])
+            body_bytes = response["body"].read()
+            content_type = response.get("contentType", "")
+
+            if "application/json" in content_type:
+                parsed = json.loads(body_bytes.decode("utf-8"))
+            elif content_type.startswith("text/") or content_type == "":
+                parsed = body_bytes.decode("utf-8")
+            else:
+                parsed = body_bytes
+
+            st.write(parsed)
 
     st.markdown("---")
     st.write("Privacy: images are processed locally in your browser/session.")
