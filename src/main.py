@@ -3,6 +3,7 @@ import json
 import os
 import base64
 import boto3
+import re
 import streamlit as st
 from PIL import Image
 
@@ -116,7 +117,58 @@ def run_app():
             else:
                 parsed = body_bytes
 
-            st.write(parsed)
+            # normalize to text for display
+            if isinstance(parsed, dict):
+                result_text = (
+                    parsed.get("text") or parsed.get("content") or json.dumps(parsed)
+                )
+            else:
+                result_text = parsed
+
+            # try to pull out a Determination line
+            # ensure result_text is a str for regex operations
+            if isinstance(result_text, (bytes, bytearray)):
+                result_text = result_text.decode("utf-8", errors="replace")
+            else:
+                result_text = str(result_text)
+
+            det_match = re.search(
+                r"Determination:\s*(.+)",
+                result_text,
+                flags=re.IGNORECASE,
+            )
+            determination = None
+            if det_match:
+                determination = det_match.group(1).splitlines()[0].strip()
+                # remove the determination line from the main explanation for cleaner display
+                explanation = re.sub(
+                    r"Determination:\s*.+",
+                    "",
+                    result_text,
+                    flags=re.IGNORECASE,
+                ).strip()
+            else:
+                explanation = result_text
+
+            st.subheader("Analysis")
+            st.markdown(explanation)
+
+            if determination:
+                dlow = determination.lower()
+                if "unsafe" in dlow or "not safe" in dlow or "danger" in dlow:
+                    st.error(f"Determination: {determination}")
+                elif "uncertain" in dlow or "unknown" in dlow:
+                    st.warning(f"Determination: {determination}")
+                elif "safe" in dlow or "ok" in dlow:
+                    st.success(f"Determination: {determination}")
+                else:
+                    st.info(f"Determination: {determination}")
+
+            with st.expander("Raw model output"):
+                if isinstance(parsed, (dict, list)):
+                    st.code(json.dumps(parsed, indent=2), language="json")
+                else:
+                    st.code(result_text)
 
     st.markdown("---")
     st.write("Privacy: images are processed locally in your browser/session.")
