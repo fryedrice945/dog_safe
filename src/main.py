@@ -99,6 +99,7 @@ def run_app():
         _show_image_preview(image_bytes, filename)
         with st.spinner("Analyzing image..."):
             response = send_to_bedrock(image_bytes, mime_type)
+            st.write(response)
         if response:
             response_body = json.loads(response["body"].read())
             st.markdown("### Analysis Result")
