@@ -1,9 +1,10 @@
+import base64
 import io
 import json
 import os
-import base64
-import boto3
 import re
+
+import boto3
 import streamlit as st
 from PIL import Image
 
@@ -36,19 +37,19 @@ def send_to_bedrock(image_bytes: bytes, mime_type: str):
         system_prompt = [
             {
                 "text": (
-                    "You are an image analysis model that can analyze images and extract the text "
-                    "from within the image. You are also an expert in canine dietary safety. "
-                    "Given an image of an ingredient label, you will extract the text from the "
-                    "label and determine if the food is safe for dogs to consume based on common "
-                    "dietary guidelines. Also base your answer on scientific research and veterinary "
-                    "recommendations. If the label contains any ingredients that are known to be harmful "
-                    "to dogs, such as chocolate, grapes, raisins, onions, garlic, or artificial "
-                    "sweeteners like xylitol, you should flag the food as unsafe. If the label is "
-                    "not clear or if you cannot determine the safety of the food based on the provided "
-                    "information, respond with 'uncertain' and recommend consulting a veterinarian. "
-                    "Do not make any assumptions about ingredients that are not explicitly listed on the label. "
-                    "You do not need to reiterate the list of known harmful ingredients that were previously mentioned. "
-                    "Provide a concise explanation for your determination."
+                    "You are an image-analysis assistant. Perform OCR on the supplied image (an ingredient label) and parse the ingredient declaration. "
+                    "Respond ONLY with a single valid JSON object and nothing else, UTF-8 encoded, with these keys: "
+                    '"determination" — one of "safe", "unsafe", or "uncertain"; '
+                    '"confidence" — one of "low", "medium", or "high"; '
+                    '"harmful_ingredients" — array of any explicitly listed ingredients known to be toxic to dogs (lowercase); '
+                    '"extracted_ingredients" — array of parsed ingredient tokens in listed order; '
+                    '"extracted_text" — full OCR text from the label; '
+                    '"explanation" — one concise sentence (<=20 words) justifying the determination without repeating the harmful_ingredients list; '
+                    '"recommended_action" — brief action when determination is "unsafe" or "uncertain" (e.g., "consult a veterinarian"); '
+                    "Rules: base judgments ONLY on ingredients explicitly listed; do NOT hallucinate or infer unlisted ingredients; "
+                    'if the label is ambiguous, incomplete, or unreadable set determination="uncertain" and confidence="low" with recommended_action="consult a veterinarian"; '
+                    'Set confidence to "high" when the label clearly lists ingredients and contains or clearly omits known toxins, "medium" for possible omissions, "low" for unclear/poor OCR. '
+                    "Keep the JSON minimal and machine-parseable."
                 ),
             },
         ]
@@ -77,7 +78,9 @@ def send_to_bedrock(image_bytes: bytes, mime_type: str):
 
 def run_app():
     st.title("Dog Safe 🐶🛡️")
-    st.write("Upload a photo or take one with your device camera. Mobile friendly.")
+    st.write(
+        "Upload a photo of an ingredient label or take one with your device camera to determine if it's safe for dogs. Mobile friendly.",
+    )
 
     col1, col2 = st.columns(2)
     with col1:
