@@ -180,11 +180,11 @@ def run_app():
                     with st.expander("Extracted ingredients"):
                         for ing in extracted:
                             st.write(f"- {ing}")
-                with st.expander("Full extracted text"):
-                    st.write(model_json.get("extracted_text", result_text))
 
     st.markdown("---")
-    st.write("Privacy: images are processed locally in your browser/session.")
+    st.write(
+        "Privacy: images are processed locally in your browser/session and are not stored."
+    )
 
 
 def lambda_handler(event, context):
