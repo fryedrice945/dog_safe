@@ -130,30 +130,58 @@ def run_app():
             else:
                 result_text = parsed
 
-            # try to pull out a Determination line
-            # ensure result_text is a str for regex operations
+            # ensure result_text is a str for downstream processing
             if isinstance(result_text, (bytes, bytearray)):
                 result_text = result_text.decode("utf-8", errors="replace")
             else:
                 result_text = str(result_text)
 
-            det_match = re.search(
-                r"Determination:\s*(.+)",
-                result_text,
-                flags=re.IGNORECASE,
-            )
-            if det_match:
-                explanation = re.sub(
-                    r"Determination:\s*.+",
-                    "",
-                    result_text,
-                    flags=re.IGNORECASE,
-                ).strip()
+            # Attempt to parse JSON output from the model and display a friendly UX
+            try:
+                model_json = json.loads(result_text)
+            except Exception:
+                # fallback: show raw text if not JSON
+                st.subheader("Analysis")
+                st.markdown(result_text)
             else:
-                explanation = result_text
-
-            st.subheader("Analysis")
-            st.markdown(explanation)
+                det = model_json.get("determination", "uncertain")
+                conf = model_json.get("confidence", "low")
+                harmful = model_json.get("harmful_ingredients", []) or []
+                rec = model_json.get("recommended_action", "") or ""
+                # friendly header
+                emoji = {"safe": "✅", "unsafe": "⚠️", "uncertain": "❓"}.get(det, "❓")
+                title = (
+                    f"{emoji} Determination: {det.capitalize()} (confidence: {conf})"
+                )
+                st.subheader("Analysis")
+                st.markdown(f"**{title}**")
+                # concise UX message
+                if det == "safe":
+                    st.success(
+                        "No known toxic ingredients were found in the listed ingredients."
+                    )
+                elif det == "unsafe":
+                    st.error(
+                        "The ingredient list includes items known to be toxic to dogs."
+                    )
+                else:
+                    st.warning("Label is ambiguous or unreadable; exercise caution.")
+                # harmful ingredients
+                if harmful:
+                    st.write("Harmful ingredients detected:")
+                    for ing in harmful:
+                        st.write(f"- {ing}")
+                # recommended action
+                if rec:
+                    st.info(f"Recommended action: {rec}")
+                # show extracted ingredients and raw text in expanders
+                extracted = model_json.get("extracted_ingredients", [])
+                if extracted:
+                    with st.expander("Extracted ingredients"):
+                        for ing in extracted:
+                            st.write(f"- {ing}")
+                with st.expander("Full extracted text"):
+                    st.write(model_json.get("extracted_text", result_text))
 
     st.markdown("---")
     st.write("Privacy: images are processed locally in your browser/session.")
